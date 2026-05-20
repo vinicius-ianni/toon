@@ -450,10 +450,10 @@ $$
 For a field named `key`, JSON uses `{"key":[]}` in compact form, while TOON uses:
 
 ```yaml
-key[0]:
+key: []
 ```
 
-Under this model, that yields a constant 3-byte advantage for TOON.
+Under this model, that yields a constant 3-byte advantage for TOON. The legacy `key[0]:` form remains decodable for backward compatibility.
 
 ## Summary Table
 

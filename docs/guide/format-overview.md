@@ -96,7 +96,7 @@ The header `items[2]{sku,qty,price}:` declares:
 Each row contains values in the same order as the field list. Values are encoded as primitives (strings, numbers, booleans, null) and separated by the delimiter.
 
 > [!NOTE]
-> Tabular format requires identical field sets across all objects (same keys, order per object may vary) and primitive values only (no nested arrays/objects).
+> Tabular format requires identical field sets across all objects (same keys, order per object may vary), primitive values only (no nested arrays/objects), and at least one key per object – arrays that contain an empty `{}` element fall back to the expanded list form below.
 
 ### Mixed and Non-Uniform Arrays
 
@@ -157,15 +157,27 @@ pairs[2]:
 
 Each inner array gets its own header on the list-item line.
 
-### Empty Arrays
-
-Empty arrays have special representations:
+When the inner arrays are themselves arrays of objects or non-uniform arrays, the same `- [N]:` header appears on the hyphen line and the nested items follow one indent deeper:
 
 ```yaml
-items[0]:
+items[3]:
+  - summary
+  - id: 1
+    name: Ada
+  - [2]:
+    - id: 2
+    - status: draft
 ```
 
-The header declares length zero, with no elements following.
+### Empty Arrays
+
+Empty arrays render as `key: []` for fields and `[]` at the root:
+
+```yaml
+items: []
+```
+
+The legacy `items[0]:` form is still decoded for backward compatibility.
 
 ## Array Headers
 
@@ -294,7 +306,7 @@ TOON quotes strings **only when necessary** to maximize token efficiency. A stri
 - It has leading or trailing whitespace
 - It equals `true`, `false`, or `null` (case-sensitive)
 - It looks like a number (e.g., `"42"`, `"-3.14"`, `"1e-6"`, or `"05"` with leading zeros)
-- It contains special characters: colon (`:`), quote (`"`), backslash (`\`), brackets, braces, or control characters (newline, tab, carriage return)
+- It contains special characters: colon (`:`), quote (`"`), backslash (`\`), brackets, braces, or any control character in U+0000–U+001F
 - It contains the relevant delimiter (the active delimiter inside an array scope, or the document delimiter elsewhere)
 - It equals `"-"` or starts with `"-"` followed by any character
 
@@ -307,7 +319,7 @@ note: This has inner spaces
 
 ### Escape Sequences
 
-In quoted strings and keys, only five escape sequences are valid:
+In quoted strings and keys, six escape sequences are valid:
 
 | Character | Escape |
 |-----------|--------|
@@ -316,8 +328,9 @@ In quoted strings and keys, only five escape sequences are valid:
 | Newline (U+000A) | `\n` |
 | Carriage return (U+000D) | `\r` |
 | Tab (U+0009) | `\t` |
+| Any other U+0000–U+001F control character | `\uXXXX` |
 
-All other escape sequences (e.g., `\x`, `\u`) are invalid and will cause an error in strict mode.
+Other escapes (e.g., `\x`, `\0`, `\b`) cause an error in strict mode, and lone-surrogate `\uXXXX` values (U+D800–U+DFFF) are always rejected.
 
 ### Type Conversions
 

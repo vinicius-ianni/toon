@@ -184,7 +184,7 @@ For full CLI documentation, see the [CLI reference](/cli/).
 
 ## Media Type & File Extension
 
-TOON files conventionally use the `.toon` extension. For HTTP transmission, the provisional media type is `text/toon`, always with UTF-8 encoding. While you may specify `charset=utf-8` explicitly, it's optional – UTF-8 is the default assumption. This follows the registration process outlined in [spec §18.2](https://github.com/toon-format/spec/blob/main/SPEC.md#182-provisional-media-type).
+TOON files conventionally use the `.toon` extension. For HTTP transmission, the provisional media type is `text/toon`, always with UTF-8 encoding. While you may specify `charset=utf-8` explicitly, it's optional – UTF-8 is the default assumption. This follows the registration process outlined in [spec §17](https://github.com/toon-format/spec/blob/main/SPEC.md#17-iana-considerations).
 
 ## Your First Example
 

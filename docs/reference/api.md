@@ -68,6 +68,10 @@ Non-JSON-serializable values are normalized before encoding:
 | `Map` | Object with `String(key)` keys |
 | `undefined`, `function`, `symbol` | `null` |
 
+::: info
+TOON itself doesn't specify how `Date` should be encoded – the spec leaves this to implementations. This library emits an ISO 8601 string in quotes; other implementations may choose differently.
+:::
+
 #### Example
 
 ```ts
@@ -581,15 +585,18 @@ Configuration for [`decode()`](#decode-input-options) and [`decodeFromLines()`](
 
 By default (`strict: true`), the decoder validates input strictly:
 
-- **Invalid escape sequences**: Throws on `\x`, unterminated strings
+- **Invalid escape sequences**: Throws on `\x`, unterminated strings, lone-surrogate `\uXXXX`
 - **Syntax errors**: Throws on missing colons, malformed headers
 - **Array length mismatches**: Throws when declared length doesn't match actual count
-- **Delimiter mismatches**: Throws when row delimiters don't match header
+- **Delimiter mismatches**: Throws when row delimiters don't match header, or when the bracket-declared delimiter doesn't match the field list
 - **Indentation errors**: Throws when leading spaces aren't exact multiples of `indent`
+- **Header structure**: Throws on leading-zero or non-integer array lengths and on intervening content between bracket/fields/colon
+- **Duplicate sibling keys**: Throws when an object has two children with the same key
+- **Path-expansion conflicts**: When `expandPaths: 'safe'` is set, throws on overlapping dotted paths that would collide
 
 All decode errors are thrown as [`ToonDecodeError`](#error-handling) instances with structured `line` and `source` fields.
 
-Set `strict: false` to skip validation for lenient parsing.
+Set `strict: false` to skip these checks. Duplicate sibling keys and path-expansion conflicts then resolve with last-write-wins in document order.
 
 See [Key Folding & Path Expansion](#key-folding-path-expansion) for more details on path expansion behavior and conflict resolution.
 
@@ -730,6 +737,8 @@ When multiple expanded keys construct overlapping paths, the decoder merges them
 - **Object + Non-object** (array or primitive): Conflict
   - With `strict: true` (default): Error
   - With `strict: false`: Last-write-wins (LWW)
+
+Duplicate sibling keys (independent of `expandPaths`) follow the same policy: strict mode throws, lenient mode keeps the last value seen.
 
 ### Delimiter Strategies
 

@@ -178,7 +178,7 @@ pairs[2]:
 ```
 
 ```yaml [Empty Array]
-items[0]:
+items: []
 ```
 
 :::
@@ -263,7 +263,7 @@ Strings **must** be quoted if they:
 - Have leading or trailing whitespace
 - Equal `true`, `false`, or `null` (case-sensitive)
 - Look like numbers (e.g., `"42"`, `"-3.14"`, `"1e-6"`, `"05"`)
-- Contain special characters: `:`, `"`, `\`, `[`, `]`, `{`, `}`, newline, tab, carriage return
+- Contain special characters: `:`, `"`, `\`, `[`, `]`, `{`, `}`, or any control character (U+0000–U+001F, including newline/tab/CR)
 - Contain the active delimiter (comma by default, or tab/pipe if declared in header)
 - Equal `"-"` or start with `"-"` followed by any character
 
@@ -276,7 +276,7 @@ note: This has inner spaces
 
 ## Escape Sequences
 
-Only five escape sequences are valid in quoted strings:
+Six escape sequences are valid in quoted strings:
 
 | Character | Escape |
 |-----------|--------|
@@ -285,8 +285,9 @@ Only five escape sequences are valid in quoted strings:
 | Newline | `\n` |
 | Carriage return | `\r` |
 | Tab | `\t` |
+| Any other U+0000–U+001F control character | `\uXXXX` |
 
-All other escapes (e.g., `\x`, `\u`) are invalid.
+Other escapes (e.g., `\x`, `\0`, `\b`) are invalid, and lone-surrogate `\uXXXX` values (U+D800–U+DFFF) are rejected.
 
 ## Array Headers
 
@@ -359,3 +360,7 @@ See [Format Overview – Key Folding](/guide/format-overview#key-folding-optiona
 | `Set` | Array of normalized values |
 | `Map` | Object with `String(key)` keys |
 | `undefined`, `function`, `symbol` | `null` |
+
+::: info
+TOON itself doesn't specify how `Date` should be encoded – the spec leaves this to implementations. This library emits an ISO 8601 string in quotes; other implementations may choose differently.
+:::
